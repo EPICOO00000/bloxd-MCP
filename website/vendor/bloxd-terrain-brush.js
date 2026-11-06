@@ -1,0 +1,37 @@
+/* Direct block terrain and biome brushes for permanent Bloxd worlds. */
+(function(global){
+'use strict'
+const key=(x,y,z)=>`${x},${y},${z}`,id=(name,fallback)=>Number((global.BLOXD_NAME_TO_ID||{})[name])||fallback
+const PRESETS={
+ tropical:{surface:id('Grass Block',4),subsurface:id('Dirt',2),stone:id('Stone',28),water:id('Water',8),beach:id('Sand',7),road:id('Dirt Path',2),snow:id('Snow',14),log:id('Palm Log',51),leaves:id('Palm Leaves',50)},
+ temperate:{surface:id('Grass Block',4),subsurface:id('Dirt',2),stone:id('Stone',28),water:id('Water',8),beach:id('Sand',7),road:id('Dirt Path',2),snow:id('Snow',14),log:id('Pine Log',51),leaves:id('Pine Leaves',50)},
+ arid:{surface:id('Sand',7),subsurface:id('Sandstone',24),stone:id('Stone',28),water:id('Water',8),beach:id('Sand',7),road:id('Brown Concrete',90),snow:id('White Concrete',97),log:id('Cactus',47),leaves:id('Cactus',47)},
+ alpine:{surface:id('Grass Block',4),subsurface:id('Dirt',2),stone:id('Stone',28),water:id('Water',8),beach:id('Gravel',6),road:id('Stone',28),snow:id('Snow',14),log:id('Pine Log',51),leaves:id('Pine Leaves',50)},
+ volcanic:{surface:id('Basalt',28),subsurface:id('Stone',28),stone:id('Obsidian',29),water:id('Lava',9),beach:id('Black Concrete',91),road:id('Basalt',28),snow:id('White Concrete',97),log:id('Charcoal Block',28),leaves:id('Dark Grey Concrete',87)},
+ alien:{surface:id('Purple Concrete',94),subsurface:id('Magenta Concrete',93),stone:id('Obsidian',29),water:id('Cyan Glass',84),beach:id('Pink Sand',7),road:id('Black Concrete',91),snow:id('White Glass',10),log:id('Blue Concrete',92),leaves:id('Lime Wool',74)}
+}
+function hash(x,z,seed){let h=Math.imul(x,374761393)^Math.imul(z,668265263)^String(seed||'1').split('').reduce((n,c)=>Math.imul(n^c.charCodeAt(0),16777619),2166136261);h=Math.imul(h^(h>>>13),1274126177);return((h^(h>>>16))>>>0)/4294967295}
+function topAt(world,x,z,hint=0,range=256){for(let y=Math.round(hint+range);y>=Math.round(hint-range);y--)if(world.blocks.has(key(x,y,z)))return y;return null}
+function material(options,role,x,y,z){const rules=options.materials||{},rule=rules[role],preset=PRESETS[options.biome]||PRESETS.temperate,base=preset[role]||preset.surface;if(!rule)return base;if(rule.mode==='block')return Number(rule.blockId)||base;if(rule.mode==='palette'&&rule.palette&&rule.palette.length&&global.BloxdTextureEngine)return global.BloxdTextureEngine.pick(rule.palette,global.BloxdTextureEngine.sample(x,y,z,{mode:rule.noise||'fbm',seed:rule.seed||`${options.seed}:${role}`,scale:rule.scale||6,octaves:rule.octaves||4,contrast:rule.contrast||1,bias:rule.bias||0}));return base}
+function columns(center,radius,falloff){const out=[];radius=Math.max(1,Math.round(radius));for(let dx=-radius;dx<=radius;dx++)for(let dz=-radius;dz<=radius;dz++){const distance=Math.hypot(dx,dz);if(distance>radius)continue;const normalized=1-distance/radius,weight=falloff==='hard'?1:falloff==='linear'?normalized:normalized*normalized*(3-2*normalized);out.push({x:center[0]+dx,z:center[2]+dz,weight,distance})}return out}
+function setBlock(world,changed,x,y,z,block){const k=key(x,y,z),before=world.blocks.get(k);world.set(x,y,z,block);if(before!==world.blocks.get(k))changed.add(k)}
+function delBlock(world,changed,x,y,z){const k=key(x,y,z);if(world.delete(x,y,z))changed.add(k)}
+function apply(world,center,options={}){
+ const changed=new Set(),radius=Math.max(1,Number(options.radius)||6),strength=Math.max(.1,Number(options.strength)||2),depth=Math.max(1,Math.round(Number(options.depth)||3)),tool=options.tool||'biome',cols=columns(center,radius,options.falloff||'smooth'),tops=new Map();cols.forEach(c=>tops.set(`${c.x},${c.z}`,topAt(world,c.x,c.z,center[1],Math.max(128,radius*4))))
+ const top=(x,z)=>tops.get(`${x},${z}`)
+ for(const c of cols){let y=top(c.x,c.z);if(y==null&&['raise','cliff','biome','beach','road','snow'].includes(tool))y=Math.round(center[1]);if(y==null)continue;const amount=Math.max(1,Math.round(strength*c.weight))
+  if(tool==='raise'||tool==='cliff'){const add=tool==='cliff'?Math.max(amount,Math.round(strength)):amount;if(world.has(c.x,y,c.z))setBlock(world,changed,c.x,y,c.z,material(options,'subsurface',c.x,y,c.z));for(let n=1;n<=add;n++)setBlock(world,changed,c.x,y+n,c.z,material(options,n===add?'surface':'stone',c.x,y+n,c.z))}
+  else if(tool==='lower'){for(let n=0;n<amount;n++)delBlock(world,changed,c.x,y-n,c.z);const next=y-amount;if(world.has(c.x,next,c.z))setBlock(world,changed,c.x,next,c.z,material(options,'surface',c.x,next,c.z))}
+  else if(tool==='flatten'||tool==='road'||tool==='beach'||tool==='river'){let target=Math.round(Number(options.targetY));if(!Number.isFinite(target))target=Math.round(center[1]);if(tool==='river')target-=Math.max(1,Math.round(strength*c.weight));if(y>target)for(let yy=y;yy>target;yy--)delBlock(world,changed,c.x,yy,c.z);else for(let yy=y+1;yy<=target;yy++)setBlock(world,changed,c.x,yy,c.z,material(options,'subsurface',c.x,yy,c.z));const role=tool==='road'?'road':tool==='beach'?'beach':tool==='river'?'stone':'surface';setBlock(world,changed,c.x,target,c.z,material(options,role,c.x,target,c.z));if(tool==='river'&&options.water!==false)setBlock(world,changed,c.x,target+1,c.z,material(options,'water',c.x,target+1,c.z))}
+  else if(tool==='smooth'){const neighbors=[[1,0],[-1,0],[0,1],[0,-1]].map(d=>top(c.x+d[0],c.z+d[1])).filter(Number.isFinite);if(!neighbors.length)continue;const target=Math.round((y+neighbors.reduce((a,b)=>a+b,0)/neighbors.length)/2);if(target<y)for(let yy=y;yy>target;yy--)delBlock(world,changed,c.x,yy,c.z);else for(let yy=y+1;yy<=target;yy++)setBlock(world,changed,c.x,yy,c.z,material(options,'subsurface',c.x,yy,c.z));setBlock(world,changed,c.x,target,c.z,material(options,'surface',c.x,target,c.z))}
+  else if(tool==='erode'){const neighbors=[[1,0],[-1,0],[0,1],[0,-1]].map(d=>top(c.x+d[0],c.z+d[1])).filter(Number.isFinite),average=neighbors.length?neighbors.reduce((a,b)=>a+b,0)/neighbors.length:y;if(y-average>1&&hash(c.x,c.z,options.seed)<c.weight){delBlock(world,changed,c.x,y,c.z);if(world.has(c.x,y-1,c.z))setBlock(world,changed,c.x,y-1,c.z,material(options,'surface',c.x,y-1,c.z))}}
+  else if(tool==='terrace'){const step=Math.max(1,Math.round(strength)),target=Math.round(y/step)*step;if(target<y)for(let yy=y;yy>target;yy--)delBlock(world,changed,c.x,yy,c.z);else for(let yy=y+1;yy<=target;yy++)setBlock(world,changed,c.x,yy,c.z,material(options,'subsurface',c.x,yy,c.z));setBlock(world,changed,c.x,target,c.z,material(options,'surface',c.x,target,c.z))}
+  else if(tool==='biome'){setBlock(world,changed,c.x,y,c.z,material(options,'surface',c.x,y,c.z));for(let n=1;n<=depth;n++)if(world.has(c.x,y-n,c.z))setBlock(world,changed,c.x,y-n,c.z,material(options,n<depth?'subsurface':'stone',c.x,y-n,c.z))}
+  else if(tool==='snow')setBlock(world,changed,c.x,y,c.z,material(options,'snow',c.x,y,c.z))
+  else if(tool==='vegetation'&&hash(c.x,c.z,options.seed)<Math.min(.35,c.weight*Number(options.density||.08))){const h=3+Math.round(hash(c.x,c.z,`${options.seed}:h`)*4);for(let n=1;n<=h;n++)setBlock(world,changed,c.x,y+n,c.z,material(options,'log',c.x,y+n,c.z));for(let dx=-2;dx<=2;dx++)for(let dy=-1;dy<=2;dy++)for(let dz=-2;dz<=2;dz++)if(dx*dx+dz*dz+dy*dy<5)setBlock(world,changed,c.x+dx,y+h+dy,c.z+dz,material(options,'leaves',c.x+dx,y+h+dy,c.z+dz))}
+ }
+ return changed
+}
+const api={PRESETS,topAt,material,apply}
+if(typeof module!=='undefined'&&module.exports)module.exports=api;else global.BloxdTerrainBrush=api
+})(typeof window!=='undefined'?window:globalThis)

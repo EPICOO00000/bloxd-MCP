@@ -1,0 +1,184 @@
+{
+  "tools": [
+    {
+      "name": "new_project",
+      "description": "Start a fresh schematic world and/or mesh. Call this before building something new."
+    },
+    {
+      "name": "get_stats",
+      "description": "World + mesh stats: block count, bounds, Bloxd chunk count (160 max per file), selection, mesh parts."
+    },
+    {
+      "name": "lookup_block",
+      "description": "Search the official 2,090 Bloxd block names/IDs. Pass a name fragment, numeric id, or #RRGGBB color."
+    },
+    {
+      "name": "nearest_block",
+      "description": "Find the closest official Bloxd block to an RGB color."
+    },
+    {
+      "name": "set_block",
+      "description": "Place or paint a single block. id 0 / Air removes it."
+    },
+    {
+      "name": "set_blocks",
+      "description": "Place many blocks at once. Each entry is [x, y, z, blockNameOrId]. Faster than set_block for details."
+    },
+    {
+      "name": "get_block",
+      "description": "Read the block at x,y,z."
+    },
+    {
+      "name": "fill_box",
+      "description": "Fill an axis-aligned box from corner a to corner b. hollow=true builds only the shell (walls/floor/ceiling)."
+    },
+    {
+      "name": "fill_sphere",
+      "description": "Solid or hollow sphere centered at x,y,z."
+    },
+    {
+      "name": "fill_ellipsoid",
+      "description": "Ellipsoid (stretched sphere) with independent radii."
+    },
+    {
+      "name": "fill_cylinder",
+      "description": "Cylinder. axis is y (upright, default), x, or z."
+    },
+    {
+      "name": "draw_line",
+      "description": "Voxel line from a to b. Optional radius makes a thick tube."
+    },
+    {
+      "name": "draw_ring",
+      "description": "Horizontal (default) or vertical ring / torus slice."
+    },
+    {
+      "name": "draw_cone",
+      "description": "Point-up cone sitting on y."
+    },
+    {
+      "name": "draw_pyramid",
+      "description": "Stepped pyramid. size is the base half-width in blocks."
+    },
+    {
+      "name": "flood_fill",
+      "description": "Recolor a connected blob of the same block id, 6-neighbour."
+    },
+    {
+      "name": "replace_blocks",
+      "description": "Replace every from-block with to-block, optionally inside a box region."
+    },
+    {
+      "name": "remove_region",
+      "description": "Delete every block inside the box a→b."
+    },
+    {
+      "name": "select_box",
+      "description": "Select every occupied block inside a→b. Later rotate/mirror/hollow/dilate/erode/extrude use this selection."
+    },
+    {
+      "name": "select_connected",
+      "description": "Select the connected same-type blob at x,y,z."
+    },
+    {
+      "name": "copy_selection",
+      "description": "Copy the current selection to the clipboard (keeps original)."
+    },
+    {
+      "name": "cut_selection",
+      "description": "Cut the current selection to the clipboard."
+    },
+    {
+      "name": "paste",
+      "description": "Paste the clipboard with its lowest corner at x,y,z."
+    },
+    {
+      "name": "delete_selection",
+      "description": "Delete selected blocks without copying."
+    },
+    {
+      "name": "move_selection",
+      "description": "Nudge the selection by dx,dy,dz blocks."
+    },
+    {
+      "name": "rotate_selection",
+      "description": "Rotate the selection 90° around x, y (default) or z."
+    },
+    {
+      "name": "mirror_selection",
+      "description": "Mirror the selection across x, y or z."
+    },
+    {
+      "name": "hollow_selection",
+      "description": "Delete interior blocks of the selection, keeping a 1-block shell."
+    },
+    {
+      "name": "dilate_selection",
+      "description": "Grow the selection by 1 block (von Neumann)."
+    },
+    {
+      "name": "erode_selection",
+      "description": "Shrink the selection by 1 block."
+    },
+    {
+      "name": "smooth_selection",
+      "description": "Majority-smooth block ids on the selection."
+    },
+    {
+      "name": "extrude_selection",
+      "description": "Extrude the selection along dx,dy,dz (default +Y by 1)."
+    },
+    {
+      "name": "undo",
+      "description": "Undo the last world edit."
+    },
+    {
+      "name": "redo",
+      "description": "Redo the last undone world edit."
+    },
+    {
+      "name": "terrain_brush",
+      "description": "VoxelForge terrain/biome brush. tool: raise, lower, flatten, smooth, erode, terrace, river, road, cliff, beach, biome, vegetation, snow."
+    },
+    {
+      "name": "generate_structure",
+      "description": "Native Bloxd procedural generator. type: terrain, island, canyon, tunnel, city, tower, castle, coral, crystals, rocks, maze, pipes, fractal, station."
+    },
+    {
+      "name": "apply_texture",
+      "description": "Paint a weighted block palette with noise (fractal Perlin, checker, stripes, ...)."
+    },
+    {
+      "name": "export_schematic",
+      "description": "Encode the world as .bloxdschem. If it needs more than 160 Bloxd chunks it is split into named parts (name_part001_x0_z64.bloxdschem) plus a ZIP, manifest and placement guide. Never refuses a build for size."
+    },
+    {
+      "name": "import_schematic",
+      "description": "Import a .bloxdschem given as base64. Offsets in the filename (_x _z _y) are honoured."
+    },
+    {
+      "name": "mesh_add",
+      "description": "Add a decorative mesh part. type BloxdBlock (official block texture) or Box (solid RGB colour). Coordinates are in blocks, origin at the model feet. Size can be fractional."
+    },
+    {
+      "name": "mesh_update",
+      "description": "Move, resize, recolor or swap the block of a mesh part."
+    },
+    {
+      "name": "mesh_remove",
+      "description": "Delete a mesh part by id."
+    },
+    {
+      "name": "mesh_duplicate",
+      "description": "Duplicate a mesh part, offset in blocks."
+    },
+    {
+      "name": "mesh_list",
+      "description": "List every mesh part with ids, transforms and materials."
+    },
+    {
+      "name": "export_mesh_code",
+      "description": "Export the mesh as JavaScript to paste into Bloxd World Code (default) or a Code Block. Meshes are decorative entities, not terrain."
+    }
+  ]
+}
