@@ -495,25 +495,32 @@
   /* MCP docs                                                          */
   /* ------------------------------------------------------------------ */
   const origin = location.origin
-  document.getElementById('mcp-url').textContent = origin + '/mcp'
+  const pagesHost = /\.github\.io$/i.test(location.hostname)
+  const mcpUrl = pagesHost
+    ? 'GitHub Pages is static — it cannot run the MCP process.\nUse stdio locally:  node server.js --stdio'
+    : origin + '/mcp'
+  document.getElementById('mcp-url').textContent = mcpUrl
   document.getElementById('mcp-stdio').textContent = JSON.stringify({
     mcpServers: {
       bloxd: {
         command: 'node',
-        args: ['/path/to/bloxd-MCP/server.js', '--stdio']
+        args: ['/absolute/path/to/bloxd-MCP/server.js', '--stdio']
       }
     }
   }, null, 2)
-  document.getElementById('mcp-http').textContent = JSON.stringify({
-    mcpServers: {
-      bloxd: { url: origin + '/mcp' }
-    }
-  }, null, 2)
-  document.getElementById('btn-copy-url').onclick = () => navigator.clipboard.writeText(origin + '/mcp')
-  fetch('/api/tools').then(r => r.json()).then(data => {
+  document.getElementById('mcp-http').textContent = pagesHost
+    ? 'HTTP MCP needs Node (node server.js). GitHub Pages only hosts the studio.'
+    : JSON.stringify({ mcpServers: { bloxd: { url: origin + '/mcp' } } }, null, 2)
+  document.getElementById('btn-copy-url').onclick = () => {
+    navigator.clipboard.writeText(pagesHost ? 'node server.js --stdio' : origin + '/mcp')
+  }
+  const showTools = data => {
     document.getElementById('tool-list-preview').textContent = (data.tools || []).map(t => t.name + ' — ' + t.description).join('\n')
-  }).catch(() => {
-    document.getElementById('tool-list-preview').textContent = 'Start the Node server to list live tools.\nnode server.js'
+  }
+  fetch('tools.json').then(r => r.ok ? r.json() : Promise.reject()).then(showTools).catch(() => {
+    fetch('/api/tools').then(r => r.json()).then(showTools).catch(() => {
+      document.getElementById('tool-list-preview').textContent = 'Could not load the tool list.'
+    })
   })
 
   window.BloxdStudio = { world, mesh, refreshWorld, refreshMesh }

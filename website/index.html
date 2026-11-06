@@ -152,7 +152,7 @@
       <div>
         <div class="kicker">Give this to an AI</div>
         <h2>Streamable HTTP + stdio MCP.</h2>
-        <p class="lede">Point Claude, Cursor, or any MCP client at this server. It gets the full VoxelForge toolset: place, fill, terrain, generate, then export schematics and mesh code.</p>
+        <p class="lede">Point Claude, Cursor, or any MCP client at this server. GitHub Pages hosts the studio only; the MCP process is <code>node server.js --stdio</code> on your machine (or any Node host for HTTP).</p>
         <label>HTTP endpoint</label>
         <div class="codebox" id="mcp-url">loading…</div>
         <label>Claude Desktop / Cursor stdio</label>
@@ -166,7 +166,7 @@
       </div>
       <div class="card">
         <h3>What the model can do</h3>
-        <p>44 tools including fill_box, fill_sphere, terrain_brush, generate_structure (castle, tower, city…), export_schematic (auto-split at 160 chunks), mesh_add and export_mesh_code.</p>
+        <p>45 tools including fill_box, fill_sphere, terrain_brush, generate_structure (castle, tower, city…), export_schematic (auto-split at 160 chunks), mesh_add and export_mesh_code.</p>
         <p style="margin-top:12px;color:var(--muted)">Start with <code>new_project</code>, build with official block names, finish with <code>export_schematic</code> or <code>export_mesh_code</code>.</p>
         <div class="log" id="tool-list-preview" style="height:280px;margin-top:14px"></div>
       </div>
@@ -174,13 +174,13 @@
   </section>
 
   <script src="js/three.min.js"></script>
-  <script src="/vendor/bloxd-block-catalog.js"></script>
-  <script src="/vendor/bloxd-block-colors.js"></script>
-  <script src="/vendor/bloxd-color-matcher.js"></script>
-  <script src="/vendor/bloxd-schematic.js"></script>
-  <script src="/vendor/bloxd-schematic-splitter.js"></script>
-  <script src="/vendor/bloxd-texture-engine.js"></script>
-  <script src="/vendor/bloxd-procedural-generators.js"></script>
+  <script src="vendor/bloxd-block-catalog.js"></script>
+  <script src="vendor/bloxd-block-colors.js"></script>
+  <script src="vendor/bloxd-color-matcher.js"></script>
+  <script src="vendor/bloxd-schematic.js"></script>
+  <script src="vendor/bloxd-schematic-splitter.js"></script>
+  <script src="vendor/bloxd-texture-engine.js"></script>
+  <script src="vendor/bloxd-procedural-generators.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

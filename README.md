@@ -8,7 +8,50 @@ A website and a [Model Context Protocol](https://modelcontextprotocol.io) server
 
 The voxel tools, block catalog, schematic codec and 160-chunk splitter are the same ones used in [VoxelForge](https://epicoo00000.github.io/VoxelForge/).
 
-## Run the website + HTTP MCP
+## Host on GitHub Pages
+
+GitHub Pages can host the **studio** (Builder + Mesh Studio + docs). It **cannot** run the MCP server — Pages only serves static files, no Node process.
+
+### 1. Push the repo
+
+```bash
+git push origin main
+```
+
+### 2. Turn on Pages (Deploy from a branch)
+
+1. Open the repo on GitHub → **Settings** → **Pages**.
+2. Under **Build and deployment**:
+   - **Source:** Deploy from a branch
+   - **Branch:** `main` (or this branch)
+   - **Folder:** `/docs`
+3. Click **Save**.
+4. Wait a minute. The studio is at:
+
+```
+https://<your-user>.github.io/bloxd-MCP/
+```
+
+The `/docs` folder is the static site (Builder, Mesh Studio, docs). Update `website/` then copy it into `docs/` before pushing if you change the UI.
+
+### 3. MCP for the AI (not on Pages)
+
+Clone the repo on your machine and point Claude Desktop / Cursor at stdio:
+
+```json
+{
+  "mcpServers": {
+    "bloxd": {
+      "command": "node",
+      "args": ["/absolute/path/to/bloxd-MCP/server.js", "--stdio"]
+    }
+  }
+}
+```
+
+For a public HTTP MCP URL you need a Node host (Railway, Render, Fly.io, a VPS) running `node server.js` — GitHub Pages will not accept `/mcp` connections.
+
+## Run the website + HTTP MCP locally
 
 ```bash
 node server.js
