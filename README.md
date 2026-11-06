@@ -8,35 +8,29 @@ A website and a [Model Context Protocol](https://modelcontextprotocol.io) server
 
 The voxel tools, block catalog, schematic codec and 160-chunk splitter are the same ones used in [VoxelForge](https://epicoo00000.github.io/VoxelForge/).
 
-## Host on GitHub Pages
+## Can GitHub host the MCP?
 
-GitHub Pages can host the **studio** (Builder + Mesh Studio + docs). It **cannot** run the MCP server — Pages only serves static files, no Node process.
+**No.** GitHub cannot run an MCP server.
 
-### 1. Push the repo
+| Thing | GitHub Pages | What you actually need |
+| --- | --- | --- |
+| Studio website (Builder, Mesh, export in the browser) | Yes — static files | Settings → Pages → branch `main` → folder `/` (root) |
+| MCP for an AI (`/mcp`, stdio tools) | **No** — no Node process, no long-running server | Your PC: `node server.js --stdio`, or Railway / Render / Fly / a VPS for HTTP |
 
-```bash
-git push origin main
-```
+GitHub Pages is a file host, like a USB stick on the web. An MCP is a **program that stays running** and answers tool calls. Pages will never do that. There is no special “MCP format” GitHub accepts for this repo.
 
-### 2. Turn on Pages (Deploy from a branch)
+### Studio on Pages
 
-1. Open the repo on GitHub → **Settings** → **Pages**.
-2. Under **Build and deployment**:
-   - **Source:** Deploy from a branch
-   - **Branch:** `main` (or this branch)
-   - **Folder:** `/docs`
-3. Click **Save**.
-4. Wait a minute. The studio is at:
+`index.html` is at the **repo root**, which matches Pages source **branch `main` / folder `/`**.
 
-```
-https://<your-user>.github.io/bloxd-MCP/
-```
+1. Repo **Settings → Pages**
+2. Source: **Deploy from a branch**
+3. Branch: **`main`**
+4. Folder: **`/` (root)** — not `/docs`
+5. Save, wait ~1 minute
+6. Open https://epicoo00000.github.io/bloxd-MCP/
 
-The `/docs` folder is the static site (Builder, Mesh Studio, docs). Update `website/` then copy it into `docs/` before pushing if you change the UI.
-
-### 3. MCP for the AI (not on Pages)
-
-Clone the repo on your machine and point Claude Desktop / Cursor at stdio:
+### MCP for the AI (your machine)
 
 ```json
 {
@@ -48,8 +42,6 @@ Clone the repo on your machine and point Claude Desktop / Cursor at stdio:
   }
 }
 ```
-
-For a public HTTP MCP URL you need a Node host (Railway, Render, Fly.io, a VPS) running `node server.js` — GitHub Pages will not accept `/mcp` connections.
 
 ## Run the website + HTTP MCP locally
 
