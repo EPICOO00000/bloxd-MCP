@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bloxd MCP — AI schematic & mesh studio</title>
+  <meta name="description" content="Give any AI the tools to build Bloxd schematics and decorative meshes. Exports .bloxdschem (auto-split at 160 chunks) and World Code JavaScript.">
+  <link rel="icon" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <nav class="app-nav">
+    <a class="brand" href="#home" data-view="home">
+      <img src="img/mark.png" alt="">
+      <strong>Bloxd MCP</strong>
+    </a>
+    <div class="nav-links">
+      <button data-view="home" class="active">Home</button>
+      <button data-view="builder">Builder</button>
+      <button data-view="mesh">Mesh Studio</button>
+      <button data-view="mcp">Give to AI</button>
+    </div>
+  </nav>
+
+  <section id="home" class="view active">
+    <div class="hero">
+      <div>
+        <div class="kicker">Model Context Protocol + VoxelForge tools</div>
+        <h1>Hand Bloxd building tools to any AI.</h1>
+        <p class="lede">A website and an MCP server. The model places Stone, carves rivers, raises castles, then exports a real <b>.bloxdschem</b>. Over 160 chunks? It splits itself. Meshes export as World Code you paste into Bloxd.</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" data-view="builder">Open builder</button>
+          <button class="btn btn-gold" data-view="mesh">Mesh studio</button>
+          <button class="btn" data-view="mcp">Connect MCP</button>
+        </div>
+        <div class="stats-row">
+          <div><b>2,090</b> official blocks</div>
+          <div><b>160</b> chunk auto-split</div>
+          <div><b>45</b> MCP tools</div>
+        </div>
+      </div>
+      <div class="hero-stage">
+        <canvas id="hero-canvas"></canvas>
+        <div class="stage-caption">Live voxel preview · Y is up · same codec Bloxd loads</div>
+      </div>
+    </div>
+    <div class="features">
+      <article class="card">
+        <h3>Builder tools</h3>
+        <p>Boxes, shells, spheres, cylinders, lines, flood fill, terrain brushes, castles, towers, cities, mazes — the VoxelForge kit, as MCP tools an AI can actually call.</p>
+      </article>
+      <article class="card">
+        <h3>.bloxdschem out</h3>
+        <p>Avro + RLE, 32³ chunks. Bigger than Bloxd's 160-chunk cap? Files named <code>build_part001_x0_z64.bloxdschem</code> plus a ZIP, manifest and placement guide.</p>
+      </article>
+      <article class="card">
+        <h3>Mesh → World Code</h3>
+        <p>Coloured boxes and Bloxd-block meshes, like Mesh Studio. Export JavaScript you paste into World Code (or a Code Block). Decorative, not terrain.</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="builder" class="view">
+    <div class="studio">
+      <aside class="side">
+        <div class="kicker">World tools</div>
+        <div class="tool-grid" id="world-tools"></div>
+        <label>Block</label>
+        <input id="block-search" placeholder="Stone, Maple Wood Planks, #c19a6b">
+        <div class="palette" id="palette"></div>
+        <label>Box / sphere size</label>
+        <input id="brush-size" type="number" min="1" max="64" value="6">
+        <label>Generate</label>
+        <select id="gen-type">
+          <option>castle</option><option>tower</option><option>city</option><option>maze</option>
+          <option>terrain</option><option>canyon</option><option>crystals</option><option>rocks</option>
+        </select>
+        <div class="row">
+          <button class="btn btn-primary" id="btn-generate">Generate</button>
+          <button class="btn" id="btn-undo">Undo</button>
+        </div>
+      </aside>
+      <div class="viewport">
+        <canvas id="world-canvas"></canvas>
+        <div class="hud">
+          <div class="pill" id="world-hud">0 blocks</div>
+          <div class="pill">orbit drag · scroll zoom · WASD</div>
+        </div>
+      </div>
+      <aside class="side right">
+        <div class="kicker">Export schematic</div>
+        <label>Name</label>
+        <input id="schem-name" value="My_Build">
+        <div class="row">
+          <button class="btn btn-primary" id="btn-export-schem">Export .bloxdschem</button>
+          <button class="btn" id="btn-clear-world">Clear</button>
+        </div>
+        <p class="warn" id="chunk-warn"></p>
+        <div class="log" id="world-log"></div>
+        <p class="lede" style="font-size:13px;margin-top:12px">If the build needs more than 160 chunks it downloads a ZIP of parts, never a file Bloxd would refuse.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section id="mesh" class="view">
+    <div class="studio">
+      <aside class="side">
+        <div class="kicker">Mesh parts</div>
+        <label>Type</label>
+        <select id="mesh-type"><option>BloxdBlock</option><option>Box</option></select>
+        <label>Block / colour</label>
+        <input id="mesh-block" value="Stone">
+        <input id="mesh-color" type="color" value="#ea7e35">
+        <label>Size W H D</label>
+        <div class="row">
+          <input id="mesh-w" type="number" step="0.1" value="1">
+          <input id="mesh-h" type="number" step="0.1" value="1">
+          <input id="mesh-d" type="number" step="0.1" value="1">
+        </div>
+        <button class="btn btn-primary" id="btn-add-mesh">Add part</button>
+        <div class="parts" id="mesh-list"></div>
+      </aside>
+      <div class="viewport">
+        <canvas id="mesh-canvas"></canvas>
+        <div class="hud">
+          <div class="pill" id="mesh-hud">0 parts</div>
+          <div class="pill">decorative entities · not terrain</div>
+        </div>
+      </div>
+      <aside class="side right">
+        <div class="kicker">World Code export</div>
+        <label>Mode</label>
+        <select id="mesh-mode">
+          <option value="world">World Code</option>
+          <option value="codeblock">Code Block</option>
+        </select>
+        <div class="row">
+          <button class="btn btn-gold" id="btn-export-mesh">Export JS</button>
+          <button class="btn" id="btn-copy-mesh">Copy</button>
+        </div>
+        <pre class="codebox" id="mesh-code">// Add parts, then export.</pre>
+        <p class="lede" style="font-size:13px">Paste into Bloxd World Code. The model spawns once at ORIGIN when the first player joins. Code Block mode appears in front of you when you right-click.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section id="mcp" class="view">
+    <div class="mcp">
+      <div>
+        <div class="kicker">Give this to an AI</div>
+        <h2>Streamable HTTP + stdio MCP.</h2>
+        <p class="lede">Point Claude, Cursor, or any MCP client at this server. It gets the full VoxelForge toolset: place, fill, terrain, generate, then export schematics and mesh code.</p>
+        <label>HTTP endpoint</label>
+        <div class="codebox" id="mcp-url">loading…</div>
+        <label>Claude Desktop / Cursor stdio</label>
+        <pre class="codebox" id="mcp-stdio"></pre>
+        <label>Remote MCP (HTTP)</label>
+        <pre class="codebox" id="mcp-http"></pre>
+        <div class="row">
+          <button class="btn btn-primary" id="btn-copy-url">Copy endpoint</button>
+          <a class="btn" href="/api/tools" target="_blank">Tool JSON</a>
+        </div>
+      </div>
+      <div class="card">
+        <h3>What the model can do</h3>
+        <p>44 tools including fill_box, fill_sphere, terrain_brush, generate_structure (castle, tower, city…), export_schematic (auto-split at 160 chunks), mesh_add and export_mesh_code.</p>
+        <p style="margin-top:12px;color:var(--muted)">Start with <code>new_project</code>, build with official block names, finish with <code>export_schematic</code> or <code>export_mesh_code</code>.</p>
+        <div class="log" id="tool-list-preview" style="height:280px;margin-top:14px"></div>
+      </div>
+    </div>
+  </section>
+
+  <script src="js/three.min.js"></script>
+  <script src="/vendor/bloxd-block-catalog.js"></script>
+  <script src="/vendor/bloxd-block-colors.js"></script>
+  <script src="/vendor/bloxd-color-matcher.js"></script>
+  <script src="/vendor/bloxd-schematic.js"></script>
+  <script src="/vendor/bloxd-schematic-splitter.js"></script>
+  <script src="/vendor/bloxd-texture-engine.js"></script>
+  <script src="/vendor/bloxd-procedural-generators.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

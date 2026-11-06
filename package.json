@@ -1,0 +1,25 @@
+{
+  "name": "bloxd-mcp",
+  "version": "1.0.0",
+  "description": "Website + MCP server that gives AI the tools to build Bloxd schematics and mesh world-code.",
+  "main": "server.js",
+  "bin": {
+    "bloxd-mcp": "server.js"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "stdio": "node server.js --stdio",
+    "test": "node tests/run.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "GPL-2.0",
+  "keywords": [
+    "bloxd",
+    "mcp",
+    "schematic",
+    "bloxdschem",
+    "voxel"
+  ]
+}

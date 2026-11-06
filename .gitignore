@@ -1,0 +1,6 @@
+node_modules/
+exports/
+.cache/
+.DS_Store
+*.log
+.arena/
